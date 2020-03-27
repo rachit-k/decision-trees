@@ -1,5 +1,4 @@
 import numpy as np
-import csv
 import matplotlib.pyplot as plt
 import math
 import sys
@@ -37,6 +36,104 @@ def IG(X,Y,x):
     Y1=np.array(Y1)
     childE=(count0*ENTROPY(Y0)+count1*ENTROPY(Y1))/t
     return (parentE-childE)
+
+#
+#def recur(actualX,actualY,X,Y,vX,vY,tX,tY,depth):
+##    print(depth)
+#    if (depth==0):
+#        return (['l',-1,0,-1,{}],1,[],[],[],[])
+#    if (len(X)==0):  
+#        return (['l',-1,0,-1,{}],1,[],[],[],[])
+##all have same output
+#    elif (len(np.unique(Y))==1):
+##        print('leaf0')
+#        return (['l',-1,Y[0],-1,{}],1,[],[],[],[])
+##all have same input  
+#    elif ((np.unique(X,axis=1)).shape[1]==1): #check
+##        print('leaf1')
+#        vals, counts = np.unique(Y, return_counts=True)    
+#        if (counts[0]>counts[1]):
+#            return (['l',-1,vals[0],-1,{}],1,[],[],[],[])
+#        else:
+#            return (['l',-1,vals[1],-1,{}],1,[],[],[],[])
+#    else:
+##        tree=[typ,dividing feature,max,median,dict] ;typ=normal/leaf
+##        print('enter')
+#        tree=['n',-1,-1,-1,{}]   
+#        nodes=1
+#        igs=[]
+#        x=X.shape[1]
+#        for i in range(x):
+#            igs.append(IG(X,Y,i))
+#        igs=np.array(igs)    
+#        maxig=np.max(igs)   
+#        maxig_ind=np.where(igs==maxig)
+##        print(maxig_ind[0][0])
+#        maxig_ind=maxig_ind[0][0]
+#        med=np.median(X[:,maxig_ind], axis=0)
+##        med=med[0][0]
+#        tree[1]=maxig_ind
+#        tree[3]=med
+#        maxval=0
+#        vals, counts = np.unique(Y, return_counts=True)
+#        if (counts[0]>counts[1]):
+#            maxval=vals[0]
+#        else:
+#           maxval=vals[1]         
+#        if (maxig<=0):
+##            print('leaf')
+#            return (['l',-1,maxval,-1,{}],nodes,[],[],[],[])             
+#        tree[2]=maxval
+#        
+#        new_x = []
+#        for i in range(x):
+#            if (i != maxig_ind):
+#                new_x.append(i)
+#        X0=[]
+#        X1=[]
+#        Y0=[]
+#        Y1=[]
+#        t=len(Y)
+#        for i in range(t):
+#            if (X[i,maxig_ind] <= med):
+#                X0.append(X[i])
+#                Y0.append(Y[i])
+#            else:
+#                X1.append(X[i])     
+#                Y1.append(Y[i]) 
+#        X0=np.array(X0)
+#        X0=X0.reshape((X0.shape[0],x))
+#        X1=np.array(X1)
+#        X1=X1.reshape((X1.shape[0],x))
+#        Y0=np.array(Y0)
+#        Y1=np.array(Y1)
+##        print("X0.shape")
+##        print(X0.shape)
+##        print(X0)
+##        print(X0[2,4])
+#        retval0=recur(actualX,actualY,X0,Y0,vX,vY,tX,tY,depth-1)
+#        retval1=recur(actualX,actualY,X1,Y1,vX,vY,tX,tY,depth-1)
+#        tree[4][0]=retval0[0]
+#        tree[4][1]=retval1[0]
+#        nodes=nodes+retval0[1]+retval1[1]        
+#        node_list=retval0[2]+retval1[2]
+#        node_list.append(nodes)
+#   
+#        accuracy =predict(actualX,actualY,tree)
+#        print(accuracy)       
+#        train_list=retval0[3]+retval1[3]
+#        train_list.append(accuracy)
+# 
+#        accuracy =predict(vX,vY,tree)
+#        valid_list=retval0[4]+retval1[4]
+#        valid_list.append(accuracy)
+#  
+#        accuracy = predict(tX,tY,tree)    
+#        test_list=retval0[5]+retval1[5]
+#        test_list.append(accuracy)
+##        print('normal')
+#        return (tree,nodes,node_list,train_list,valid_list,test_list) 
+#    
 
 def recur(X,Y,depth):
 #    print(depth)
@@ -156,37 +253,38 @@ def prune_help(vX,vY,tree):
     return (acc,tree1)
 
 
-#def prune(X,Y,vX,vY,tX,tY,tree):
-#    acc_train_list=[]
-#    acc_valid_list=[]
-#    acc_test_list=[]
-#    tree1=tree.copy()
-#    while(True):
-#        acc_train=predict(X,Y,tree1)
-#        acc_valid=predict(vX,vY,tree1)
-#        acc_test=predict(vX,vY,tree1)
-#        acc_train_list.append(acc_train)
-#        acc_valid_list.append(acc_valid)
-#        acc_test_list.append(acc_test)
-#        new_acc,new_tree=prune_help(vX,vY,tree1)
-#        if (acc_valid>new_acc):
-##            print('stop pruning')
-#            break
-#
-#    return (acc_train_list,acc_valid_list,acc_test_list) 
 def prune(X,Y,vX,vY,tX,tY,tree):
+    acc_train_list=[]
+    acc_valid_list=[]
+    acc_test_list=[]
     tree1=tree.copy()
     while(True):
+        acc_train=predict(X,Y,tree1)
         acc_valid=predict(vX,vY,tree1)
+        acc_test=predict(vX,vY,tree1)
+        acc_train_list.append(acc_train)
+        acc_valid_list.append(acc_valid)
+        acc_test_list.append(acc_test)
         new_acc,new_tree=prune_help(vX,vY,tree1)
-        if (acc_valid>=new_acc):   
-            acc_train=predict(X,Y,new_tree)
-            acc_test=predict(tX,tY,new_tree)
-            print('stop pruning')
+        if (acc_valid>new_acc):
+#            print('stop pruning')
             break
-        tree1=new_tree
 
-    return (acc_train,acc_valid,acc_test) 
+    return (acc_train_list,acc_valid_list,acc_test_list) 
+#def prune(X,Y,vX,vY,tX,tY,tree):
+#    tree1=tree.copy()
+#    acc_valid=predict(vX,vY,tree1)
+#    while(True):
+#        new_acc,new_tree=prune_help(vX,vY,tree1)
+#        if (acc_valid>=new_acc):   
+#            acc_train=predict(X,Y,new_tree)
+#            acc_test=predict(tX,tY,new_tree)
+#            acc_valid=new_acc
+#            break
+#        tree1=new_tree
+#        acc_valid=new_acc
+#
+#    return (acc_train,acc_valid,acc_test) 
 
 
 
@@ -228,7 +326,7 @@ for depth in depths:
     tree,nodes=recur(X,Y,depth)
     
     nodes_list.append(nodes)
-    tree_list.append(tree)
+#    tree_list.append(tree)
     print("validation accuracy:")    
     accuracy =predict(X,Y,tree)
     print(accuracy)
@@ -257,26 +355,24 @@ plt.show()
 #print("time:")
 #print(timeit.default_timer()-starttime)
 
-train_list1=[]
-test_list1=[]
-valid_list1=[]
+#acc_train_list=[]
+#acc_valid_list=[]
+#acc_test_list=[]
 
 #starttime = timeit.default_timer()    
 #
-for tree in tree_list:
-    acc_train,acc_valid,acc_test=prune(X,Y,vX,vY,tX,tY,tree)
-    train_list1.append(acc_train)
-    valid_list1.append(acc_valid)
-    test_list1.append(acc_test)
+
+acc_train_list,acc_valid_list,acc_test_list=prune(X,Y,vX,vY,tX,tY,tree)
+
     
 #
 #print("time:")    
 #
 #print(timeit.default_timer()-starttime)
 
-plt.plot(nodes_list,train_list1,'-o',label='train',color='red',)
-plt.plot(nodes_list,valid_list1,'-o',label='validation',color='blue')
-plt.plot(nodes_list,test_list1,'-o',label='test',color='green')
+plt.plot(nodes_list,acc_train_list,'-o',label='train',color='red',)
+plt.plot(nodes_list,acc_valid_list,'-o',label='validation',color='blue')
+plt.plot(nodes_list,acc_test_list,'-o',label='test',color='green')
 plt.xlabel('number of nodes')
 plt.ylabel('accuracy')
 plt.legend()

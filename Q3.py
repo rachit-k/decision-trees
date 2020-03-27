@@ -67,7 +67,6 @@ accuracy = clf.score(tX,tY)
 print(accuracy)
 #test_list.append(accuracy)
     
-#450 0.6 10       0.8103781311328481
 ##    (b)    
 #plt.plot(n_estimators_list,valid_list,'-o',label='validation')
 #plt.plot(n_estimators_list,test_list,'-o',label='test')
